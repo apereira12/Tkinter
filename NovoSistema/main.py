@@ -92,13 +92,19 @@ class App(customtkinter.CTk):
     def create_second_frame(self):
         self.second_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.second_frame.grid_columnconfigure(0, weight=1)
-        self.filtros1 = customtkinter.CTkFrame(self.second_frame)
+        self.second_frame.rowconfigure(70, weight=1)
+        self.filtros1 = customtkinter.CTkFrame(self.second_frame, fg_color="lightblue")
+        self.textlabelfiltro = customtkinter.CTkLabel(master=self.filtros1,text="Filtros para Análises", text_color=("gray15", "gray05"))
+        self.textlabelfiltro.grid(row=1, column=5, pady=10, sticky="nsew")
+
+
         self.filtros1.grid(row=0, column=0, sticky="nsew")
         self.filtros1.grid_rowconfigure(7, weight=4)
 
-        self.anos_disponiveis = []
+
 
         self.tree1 = ttk.Treeview(self.second_frame, show="headings")
+
         self.tree1.grid(row=3, column=0, columnspan=3, pady=10, sticky="nsew")
 
 
@@ -132,18 +138,18 @@ class App(customtkinter.CTk):
 
         # Cria a StringVar no escopo do frame
         self.anos_disponiveis = sorted(df['AnoJogo'].unique())
-        self.anos_disponiveis = ["Todos"] + [str(ano) for ano in self.anos_disponiveis]
+        self.anos_disponiveis = ["Todos os Anos"] + [str(ano) for ano in self.anos_disponiveis]
+        self.Anos1 = customtkinter.CTkOptionMenu(self.filtros1, values=self.anos_disponiveis,
+                                                       command=self.filtrar_dados)
+        self.Anos1.grid(row=6, column=9, padx=20, pady=20, sticky="s")
 
-        # Cria um novo CTkOptionMenu com as novas opções
-        self.filtro_var = tk.StringVar(master=self.filtros1)
-        self.filtro_var.set("Todos")  # Valor padrão
 
-        # Opção do filtro
-        self.option_menu = tk.OptionMenu(self.filtros1, self.filtro_var, *self.anos_disponiveis)
-        self.option_menu.grid(row=0, column=2, padx=(10, 0), pady=(10, 0))
+        self.resultado_disponivel = sorted(df['Quem Venceu?'].unique())
 
-        # Associar a função filtrar_dados à variável de controle
-        self.filtro_var.trace_add("write", self.filtrar_dados)
+        self.resultado_disponivel = ["Todos Resultados"] + [str(ano) for ano in self.resultado_disponivel]
+        self.Resultados1 = customtkinter.CTkOptionMenu(self.filtros1, values=self.resultado_disponivel,
+                                                       command=self.filtrar_dados)
+        self.Resultados1.grid(row=6, column=7, padx=20, pady=20, sticky="s")
 
 
         self.df = df  # Atribui o DataFrame à variável de instância
@@ -151,14 +157,16 @@ class App(customtkinter.CTk):
         self.atualizar_dados()  # Chama a função para atualizar os dados
 
     def filtrar_dados(self, *args):
-        filtro = self.filtro_var.get()
+        filtroAno = self.Anos1.get()
+        filtroResultado = self.Resultados1.get()
 
         # Limpar a Treeview
         self.tree1.delete(*self.tree1.get_children())
 
         # Adicionar de volta apenas os itens que correspondem ao filtro
         for i, row in self.df.iterrows():
-            if filtro == "Todos" or filtro.lower() == str(row['AnoJogo']).lower():
+            if (filtroAno == "Todos os Anos" or filtroAno.lower() == str(row['AnoJogo']).lower()) and \
+                    (filtroResultado == "Todos Resultados" or filtroResultado.lower() == str(row['Quem Venceu?']).lower()):
                 values = [str(row[col]) for col in self.df.columns]
                 self.tree1.insert("", "end", values=values)
 
@@ -170,6 +178,11 @@ class App(customtkinter.CTk):
         for i, row in self.df.iterrows():
             values = [str(row[col]) for col in self.df.columns]
             self.tree1.insert("", "end", values=values)
+
+
+
+
+
 
     def create_third_frame(self):
         self.third_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
